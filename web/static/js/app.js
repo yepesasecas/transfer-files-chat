@@ -19,3 +19,31 @@ import "phoenix_html"
 // paths "./socket" or full ones "web/static/js/socket".
 
 import socket from "./socket"
+import {ReadFile} from "./file_reader"
+
+
+socket.connect()
+
+// Now that you are connected, you can join channels with a topic:
+let channel = socket.channel("rooms:lobby", {})
+let messagesContainer = $("#messages")
+let chatInput = $("#chat-input")
+
+chatInput.on("keypress", event => {
+  if(event.keyCode === 13){
+    channel.push("new_msg", {body: chatInput.val()})
+    chatInput.val("")
+  }
+})
+
+channel.on("new_msg", payload => {
+  messagesContainer.append(`<br\>[${Date()}] ${payload.body}`)
+})
+
+channel.join()
+  .receive("ok", resp => { console.log("Joined successfully", resp) })
+  .receive("error", resp => { console.log("Unable to join", resp) })
+
+
+let file_path = document.getElementById('file')
+ReadFile.read(file_path, channel)
