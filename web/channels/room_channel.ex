@@ -9,8 +9,18 @@ defmodule Chat.RoomChannel do
     {:error, %{reason: "unaithorized"}}
   end
 
-  def handle_in("new_msg", %{"body" => body}, socket) do
-    broadcast! socket, "new_msg", %{body: body}
+  def handle_in("new_chat_msg", %{"body" => body}, socket) do
+    broadcast! socket, "new_chat_msg", %{body: body}
+    {:noreply, socket}
+  end
+
+  def handle_in("new_file_line", %{"body" => body}, socket) do
+    broadcast! socket, "new_file_line", %{body: body}
+    {:noreply, socket}
+  end
+
+  def handle_in("progress", %{"body" => body}, socket) do
+    broadcast! socket, "progress", %{body: body}
     {:noreply, socket}
   end
 end

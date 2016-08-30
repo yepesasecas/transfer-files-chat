@@ -26,18 +26,25 @@ socket.connect()
 
 // Now that you are connected, you can join channels with a topic:
 let channel = socket.channel("rooms:lobby", {})
-let messagesContainer = $("#messages")
 let chatInput = $("#chat-input")
 
 chatInput.on("keypress", event => {
   if(event.keyCode === 13){
-    channel.push("new_msg", {body: chatInput.val()})
+    channel.push("new_chat_msg", {body: chatInput.val()})
     chatInput.val("")
   }
 })
 
-channel.on("new_msg", payload => {
-  messagesContainer.prepend(`<br\>[${Date()}] ${payload.body}`)
+channel.on("new_chat_msg", payload => {
+  $("#messages").append(`<br\>${payload.body}`)
+})
+
+channel.on("new_file_line", payload => {
+  $("#file-container").prepend(`<br\>${payload.body}`)
+})
+
+channel.on("progress", payload => {
+  $("#progress").text(payload.body)
 })
 
 channel.join()
@@ -59,11 +66,11 @@ $("#file").change( ()=> {
         var line = lines[i];
 
         // Do something with line
-        channel.push("new_msg", {body: line})
+        channel.push("new_file_line", {body: line})
     }
 
     // progress is a position of the last read line as % from whole file length;
-    channel.push("new_msg", {body: "PROGRESS " + progress + "%"})
+    channel.push("progress", {body: "PROGRESS " + progress + "%"})
 
     // End of file
     if (isEof) return;

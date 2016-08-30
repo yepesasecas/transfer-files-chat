@@ -1,3 +1,9 @@
-<input type="file" name="file" id="file">
 <input id="chat-input" type="text"></input>
 <div id="messages"></div>
+
+<hr>
+<input type="file" name="file" id="file">
+<div id="progress">
+  Progress: Not Started
+</div>
+<div id="file-container"></div>
