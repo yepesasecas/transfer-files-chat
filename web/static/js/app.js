@@ -19,7 +19,7 @@ import "phoenix_html"
 // paths "./socket" or full ones "web/static/js/socket".
 
 import socket from "./socket"
-import {ReadFile} from "./file_reader"
+import lineNavigator from "line-navigator"
 
 
 socket.connect()
@@ -37,7 +37,7 @@ chatInput.on("keypress", event => {
 })
 
 channel.on("new_msg", payload => {
-  messagesContainer.append(`<br\>[${Date()}] ${payload.body}`)
+  messagesContainer.prepend(`<br\>[${Date()}] ${payload.body}`)
 })
 
 channel.join()
@@ -45,5 +45,30 @@ channel.join()
   .receive("error", resp => { console.log("Unable to join", resp) })
 
 
-let file_path = document.getElementById('file')
-ReadFile.read(file_path, channel)
+$("#file").change( ()=> {
+  console.log("cambio!!!");
+  let file = $("#file")[0].files[0]
+  let navigator = new lineNavigator(file)
+  console.log(navigator);
+  navigator.readSomeLines(0, function linesReadHandler(err, index, lines, isEof  , progress){
+    if (err) throw err;
+
+    // Reading lines
+    for (var i = 0; i < lines.length; i++) {
+        var lineIndex = index + i;
+        var line = lines[i];
+
+        // Do something with line
+        channel.push("new_msg", {body: line})
+    }
+
+    // progress is a position of the last read line as % from whole file length;
+    channel.push("new_msg", {body: "PROGRESS " + progress + "%"})
+
+    // End of file
+    if (isEof) return;
+
+    // Reading next chunk, adding number of lines read to first line in current chunk
+    navigator.readSomeLines(index + lines.length, linesReadHandler);
+  })
+})
